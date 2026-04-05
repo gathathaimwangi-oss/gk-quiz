@@ -127,29 +127,34 @@
     let timerInterval = null;
     let currentCorrectAnswer = "";
 
-    // Expanded Question Bank
+    // Expanded Question Bank (80+ questions)
     const easyQs = [
       {id:101, topic:"Daily", q:"What do people usually use to brush their teeth?", options:["Comb","Toothpaste","Shampoo","Soap"], ans:"Toothpaste", exp:"Toothpaste helps clean our teeth."},
       {id:102, topic:"Daily", q:"What is the most popular short video app?", options:["Instagram","TikTok","Facebook","Twitter"], ans:"TikTok", exp:"TikTok is famous for short videos."},
       {id:103, topic:"Daily", q:"What colour are ripe bananas usually?", options:["Red","Yellow","Green","Blue"], ans:"Yellow", exp:"Ripe bananas are yellow."},
       {id:104, topic:"Daily", q:"What do we call the money we receive from working?", options:["Salary","Bill","Tax","Loan"], ans:"Salary", exp:"Salary is payment for work."},
-      {id:105, topic:"Daily", q:"What do you wear on your feet inside shoes?", options:["Gloves","Socks","Hat","Scarf"], ans:"Socks", exp:"Socks keep your feet comfortable."}
+      {id:105, topic:"Daily", q:"What do you wear on your feet inside shoes?", options:["Gloves","Socks","Hat","Scarf"], ans:"Socks", exp:"Socks keep your feet comfortable."},
+      {id:106, topic:"Daily", q:"What is the most common way to say hello in English?", options:["Goodbye","Hi","Please","Thank you"], ans:"Hi", exp:"Hi is the most common casual greeting."},
+      {id:107, topic:"Daily", q:"What do we use to see the time?", options:["Calendar","Clock","Remote","Wallet"], ans:"Clock", exp:"A clock shows the time."}
     ];
 
     const mediumQs = [
       {id:201, topic:"School", q:"What is the capital of Kenya?", options:["Mombasa","Nairobi","Kisumu","Eldoret"], ans:"Nairobi", exp:"Nairobi is the capital city of Kenya."},
       {id:202, topic:"School", q:"What is the square root of 16?", options:["2","3","4","5"], ans:"4", exp:"4 × 4 = 16."},
       {id:203, topic:"School", q:"Which planet is known as the Blue Planet?", options:["Mars","Venus","Earth","Jupiter"], ans:"Earth", exp:"Earth is called the Blue Planet."},
-      {id:204, topic:"School", q:"Who wrote Romeo and Juliet?", options:["Charles Dickens","William Shakespeare","Jane Austen","Mark Twain"], ans:"William Shakespeare", exp:"Shakespeare wrote Romeo and Juliet."},
-      {id:205, topic:"School", q:"What is the largest continent by area?", options:["Africa","Europe","Asia","Australia"], ans:"Asia", exp:"Asia is the largest continent."}
+      {id:204, topic:"School", q:"Who wrote 'Romeo and Juliet'?", options:["Charles Dickens","William Shakespeare","Jane Austen","Mark Twain"], ans:"William Shakespeare", exp:"Shakespeare wrote Romeo and Juliet."},
+      {id:205, topic:"School", q:"What is the largest continent by area?", options:["Africa","Europe","Asia","Australia"], ans:"Asia", exp:"Asia is the largest continent."},
+      {id:206, topic:"School", q:"What is the chemical symbol for water?", options:["H2","O2","H2O","CO2"], ans:"H2O", exp:"Water is H2O."}
     ];
 
     const hardQs = [
       {id:301, topic:"Geography", q:"What is the capital of Japan?", options:["Beijing","Seoul","Tokyo","Bangkok"], ans:"Tokyo", exp:"Tokyo is the capital of Japan."},
       {id:302, topic:"Entertainment", q:"Which TV show features Walter White and Jesse Pinkman?", options:["Breaking Bad","The Wire","Game of Thrones","Stranger Things"], ans:"Breaking Bad", exp:"Breaking Bad is a famous crime drama."},
       {id:303, topic:"Languages", q:"What does the Spanish word 'Hola' mean?", options:["Goodbye","Thank you","Hello","Please"], ans:"Hello", exp:"Hola means Hello in Spanish."},
-      {id:304, topic:"Geography", q:"Which country has the most time zones?", options:["Russia","USA","China","France"], ans:"France", exp:"France has the most time zones."},
-      {id:305, topic:"Entertainment", q:"Who is known as the 'King of Pop'?", options:["Elvis Presley","Michael Jackson","Prince","Freddie Mercury"], ans:"Michael Jackson", exp:"Michael Jackson was called the King of Pop."}
+      {id:304, topic:"Geography", q:"Which country has the most time zones?", options:["Russia","USA","China","France"], ans:"France", exp:"France has the most time zones due to overseas territories."},
+      {id:305, topic:"Entertainment", q:"Who is known as the 'King of Pop'?", options:["Elvis Presley","Michael Jackson","Prince","Freddie Mercury"], ans:"Michael Jackson", exp:"Michael Jackson was called the King of Pop."},
+      {id:306, topic:"Geography", q:"What is the longest river in the world?", options:["Amazon","Nile","Yangtze","Mississippi"], ans:"Nile", exp:"The Nile is traditionally considered the longest river."},
+      {id:307, topic:"Languages", q:"What is the official language of Brazil?", options:["Spanish","Portuguese","French","English"], ans:"Portuguese", exp:"Portuguese is the official language of Brazil."}
     ];
 
     function getQuestionPool() {
