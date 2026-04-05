@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GK Quiz - Test Your Knowledge</title>
+  <style>
+    :root { --bg: #0f0f1e; --text: #eee; --accent: #00ffcc; }
+    .light { --bg: #f8f9fa; --text: #222; --accent: #008866; }
+
+    body {
+      margin: 0; padding: 0; font-family: Arial, sans-serif;
+      background: var(--bg); color: var(--text); text-align: center;
+    }
+    .container { max-width: 720px; margin: 0 auto; padding: 20px; }
+
+    #homepage { padding-top: 120px; }
+    h1 { font-size: 52px; color: var(--accent); margin: 0 0 20px 0; }
+
+    button {
+      background: var(--accent); color: #000; border: none;
+      padding: 16px 40px; font-size: 20px; border-radius: 12px;
+      margin: 12px; cursor: pointer; font-weight: bold;
+    }
+
+    #quizScreen { display: none; }
+    .header {
+      display: flex; justify-content: space-between; align-items: center;
+      background: rgba(0,0,0,0.3); padding: 12px 20px; border-radius: 12px; margin-bottom: 20px;
+    }
+    #timer { font-size: 34px; font-weight: bold; color: var(--accent); }
+    #scoreDisplay { font-size: 22px; color: #00dd99; }
+
+    .questionBox {
+      background: #1a1a2e; padding: 25px; border-radius: 15px; margin: 20px 0;
+    }
+    .light .questionBox { background: #e0e0e8; }
+
+    .options button {
+      width: 100%; padding: 15px; margin: 10px 0; background: #16213e;
+      color: white; border: none; border-radius: 10px; font-size: 17px;
+      cursor: pointer;
+    }
+    .light .options button { background: #c0c0d0; color: #111; }
+
+    .feedback {
+      padding: 20px; border-radius: 12px; margin: 20px 0; font-size: 21px; display: none;
+    }
+    .correct { background: #006400; }
+    .wrong { background: #8b0000; }
+
+    #exitBtn {
+      position: fixed; bottom: 25px; right: 25px;
+      background: #ff4444; color: white; padding: 12px 28px;
+      border: none; border-radius: 50px; font-size: 17px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- HOMEPAGE -->
+  <div id="homepage" class="container">
+    <h1>🧠 GK Quiz</h1>
+    <p style="font-size:24px; margin:30px 0;">How much do you really know?</p>
+    <button onclick="startQuiz()">Start Quiz</button>
+    <button onclick="showSettings()">Settings</button>
+  </div>
+
+  <!-- QUIZ SCREEN -->
+  <div id="quizScreen" class="container">
+    <div class="header">
+      <div>Topic: <span id="topic" style="color:var(--accent); font-weight:bold;"></span></div>
+      <div id="timer">15</div>
+      <div id="scoreDisplay">Score: <span id="score">0</span></div>
+    </div>
+
+    <div class="questionBox">
+      <p id="question" style="font-size:22px; min-height:100px;"></p>
+      <div class="options" id="options"></div>
+    </div>
+
+    <div id="feedback" class="feedback"></div>
+    <button onclick="skipQuestion()">Skip Question</button>
+  </div>
+
+  <button id="exitBtn" onclick="exitQuiz()" style="display:none;">Exit Quiz</button>
+
+  <!-- SETTINGS -->
+  <div id="settingsScreen" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.95); z-index:1000;">
+    <div style="background:var(--bg); color:var(--text); max-width:420px; margin:100px auto; padding:30px; border-radius:15px;">
+      <h2>Settings</h2>
+      
+      <p><strong>Theme</strong></p>
+      <button onclick="toggleTheme()" id="themeButton">Switch to Light Mode</button>
+
+      <p><strong>Timer per question</strong></p>
+      <select id="timerSetting">
+        <option value="5">5 seconds</option>
+        <option value="10" selected>10 seconds</option>
+        <option value="15">15 seconds</option>
+      </select>
+
+      <p><strong>Difficulty</strong></p>
+      <select id="difficultySetting">
+        <option value="easy">Easy (1 point)</option>
+        <option value="medium" selected>Medium (3 points)</option>
+        <option value="hard">Hard (5 points)</option>
+      </select>
+
+      <p><strong>Sound Effects</strong></p>
+      <label><input type="checkbox" id="soundSetting" checked> Enable sounds</label>
+
+      <br><br>
+      <button onclick="closeSettings()" style="background:#00cc88; padding:12px 30px;">Save & Close</button>
+    </div>
+  </div>
+
+  <script>
+    let score = 0;
+    let isDark = true;
+    let timerTime = 10;
+    let pointsPerCorrect = 3;
+    let soundOn = true;
+    let currentDifficulty = "medium";
+    let lastQuestionId = null;
+
+    let timerInterval = null;
+    let currentCorrectAnswer = "";
+
+    // Expanded Question Bank
+    const easyQs = [
+      {id:101, topic:"Daily", q:"What do people usually use to brush their teeth?", options:["Comb","Toothpaste","Shampoo","Soap"], ans:"Toothpaste", exp:"Toothpaste helps clean our teeth."},
+      {id:102, topic:"Daily", q:"What is the most popular short video app?", options:["Instagram","TikTok","Facebook","Twitter"], ans:"TikTok", exp:"TikTok is famous for short videos."},
+      {id:103, topic:"Daily", q:"What colour are ripe bananas usually?", options:["Red","Yellow","Green","Blue"], ans:"Yellow", exp:"Ripe bananas are yellow."},
+      {id:104, topic:"Daily", q:"What do we call the money we receive from working?", options:["Salary","Bill","Tax","Loan"], ans:"Salary", exp:"Salary is payment for work."},
+      {id:105, topic:"Daily", q:"What do you wear on your feet inside shoes?", options:["Gloves","Socks","Hat","Scarf"], ans:"Socks", exp:"Socks keep your feet comfortable."}
+    ];
+
+    const mediumQs = [
+      {id:201, topic:"School", q:"What is the capital of Kenya?", options:["Mombasa","Nairobi","Kisumu","Eldoret"], ans:"Nairobi", exp:"Nairobi is the capital city of Kenya."},
+      {id:202, topic:"School", q:"What is the square root of 16?", options:["2","3","4","5"], ans:"4", exp:"4 × 4 = 16."},
+      {id:203, topic:"School", q:"Which planet is known as the Blue Planet?", options:["Mars","Venus","Earth","Jupiter"], ans:"Earth", exp:"Earth is called the Blue Planet."},
+      {id:204, topic:"School", q:"Who wrote Romeo and Juliet?", options:["Charles Dickens","William Shakespeare","Jane Austen","Mark Twain"], ans:"William Shakespeare", exp:"Shakespeare wrote Romeo and Juliet."},
+      {id:205, topic:"School", q:"What is the largest continent by area?", options:["Africa","Europe","Asia","Australia"], ans:"Asia", exp:"Asia is the largest continent."}
+    ];
+
+    const hardQs = [
+      {id:301, topic:"Geography", q:"What is the capital of Japan?", options:["Beijing","Seoul","Tokyo","Bangkok"], ans:"Tokyo", exp:"Tokyo is the capital of Japan."},
+      {id:302, topic:"Entertainment", q:"Which TV show features Walter White and Jesse Pinkman?", options:["Breaking Bad","The Wire","Game of Thrones","Stranger Things"], ans:"Breaking Bad", exp:"Breaking Bad is a famous crime drama."},
+      {id:303, topic:"Languages", q:"What does the Spanish word 'Hola' mean?", options:["Goodbye","Thank you","Hello","Please"], ans:"Hello", exp:"Hola means Hello in Spanish."},
+      {id:304, topic:"Geography", q:"Which country has the most time zones?", options:["Russia","USA","China","France"], ans:"France", exp:"France has the most time zones."},
+      {id:305, topic:"Entertainment", q:"Who is known as the 'King of Pop'?", options:["Elvis Presley","Michael Jackson","Prince","Freddie Mercury"], ans:"Michael Jackson", exp:"Michael Jackson was called the King of Pop."}
+    ];
+
+    function getQuestionPool() {
+      if (currentDifficulty === "easy") return easyQs;
+      if (currentDifficulty === "medium") return mediumQs;
+      return hardQs;
+    }
+
+    function playCorrectSound() {
+      if (!soundOn) return;
+      let ctx = new (window.AudioContext || window.webkitAudioContext)();
+      let osc = ctx.createOscillator();
+      osc.frequency.setValueAtTime(900, ctx.currentTime);
+      osc.connect(ctx.destination);
+      osc.start();
+      setTimeout(() => osc.stop(), 300);
+    }
+
+    function playWrongSound() {
+      if (!soundOn) return;
+      let ctx = new (window.AudioContext || window.webkitAudioContext)();
+      let osc = ctx.createOscillator();
+      osc.type = "sawtooth";
+      osc.frequency.setValueAtTime(180, ctx.currentTime);
+      osc.connect(ctx.destination);
+      osc.start();
+      setTimeout(() => osc.stop(), 600);
+    }
+
+    function startQuiz() {
+      score = 0;
+      lastQuestionId = null;
+      document.getElementById("homepage").style.display = "none";
+      document.getElementById("quizScreen").style.display = "block";
+      document.getElementById("exitBtn").style.display = "block";
+      document.getElementById("score").textContent = "0";
+      newQuestion();
+    }
+
+    function exitQuiz() {
+      if (confirm("Exit the quiz?")) {
+        clearInterval(timerInterval);
+        document.getElementById("quizScreen").style.display = "none";
+        document.getElementById("exitBtn").style.display = "none";
+        document.getElementById("homepage").style.display = "block";
+      }
+    }
+
+    function showSettings() {
+      document.getElementById("settingsScreen").style.display = "block";
+    }
+
+    function closeSettings() {
+      timerTime = parseInt(document.getElementById("timerSetting").value);
+      currentDifficulty = document.getElementById("difficultySetting").value;
+      pointsPerCorrect = currentDifficulty === "easy" ? 1 : currentDifficulty === "medium" ? 3 : 5;
+      soundOn = document.getElementById("soundSetting").checked;
+      document.getElementById("settingsScreen").style.display = "none";
+    }
+
+    function toggleTheme() {
+      isDark = !isDark;
+      document.body.classList.toggle("light", !isDark);
+      document.getElementById("themeButton").textContent = isDark ? "Switch to Light Mode" : "Switch to Dark Mode";
+    }
+
+    function newQuestion() {
+      clearInterval(timerInterval);
+      const pool = getQuestionPool();
+      
+      let q;
+      do {
+        q = pool[Math.floor(Math.random() * pool.length)];
+      } while (q.id === lastQuestionId && pool.length > 1);
+
+      lastQuestionId = q.id;
+      currentCorrectAnswer = q.ans;
+
+      document.getElementById("topic").textContent = q.topic;
+      document.getElementById("question").textContent = q.q;
+
+      const optionsDiv = document.getElementById("options");
+      optionsDiv.innerHTML = "";
+
+      q.options.forEach(opt => {
+        let btn = document.createElement("button");
+        btn.textContent = opt;
+        btn.onclick = () => handleAnswer(opt, q.exp);
+        optionsDiv.appendChild(btn);
+      });
+
+      document.getElementById("feedback").style.display = "none";
+
+      let time = timerTime;
+      document.getElementById("timer").textContent = time;
+
+      timerInterval = setInterval(() => {
+        time--;
+        document.getElementById("timer").textContent = time;
+        if (time <= 0) {
+          clearInterval(timerInterval);
+          showTimeUp(q.exp);
+        }
+      }, 1000);
+    }
+
+    function handleAnswer(selected, explanation) {
+      clearInterval(timerInterval);
+      const feedback = document.getElementById("feedback");
+      feedback.style.display = "block";
+
+      if (selected === currentCorrectAnswer) {
+        score += pointsPerCorrect;
+        document.getElementById("score").textContent = score;
+        feedback.className = "feedback correct";
+        feedback.innerHTML = `✅ Correct! +${pointsPerCorrect} points<br><small>${explanation}</small>`;
+        playCorrectSound();
+      } else {
+        feedback.className = "feedback wrong";
+        feedback.innerHTML = `❌ Wrong.<br>Correct answer: <b>${currentCorrectAnswer}</b><br><small>${explanation}</small>`;
+        playWrongSound();
+      }
+
+      setTimeout(newQuestion, 3200);
+    }
+
+    function skipQuestion() {
+      clearInterval(timerInterval);
+      newQuestion();
+    }
+
+    function showTimeUp(explanation) {
+      const feedback = document.getElementById("feedback");
+      feedback.style.display = "block";
+      feedback.className = "feedback wrong";
+      feedback.innerHTML = `⏰ Time's up!<br>Correct answer: <b>${currentCorrectAnswer}</b><br><small>${explanation}</small>`;
+      playWrongSound();
+      setTimeout(newQuestion, 3200);
+    }
+
+    window.onload = () => {
+      document.getElementById("themeButton").textContent = "Switch to Light Mode";
+    };
+  </script>
+</body>
+</html>
